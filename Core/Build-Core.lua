@@ -5,13 +5,21 @@ project "Core"
    targetdir "bin/%{cfg.buildcfg}"
    staticruntime "off"
 
-   files { "include/**.h", "src/**.cpp" }
+   files 
+   { 
+      "include/**.h", 
+      "src/**.cpp",
+      "vendor/glm/**.hpp",
+      "vendor/glm/**.h",
+      "vendor/glm/**.inl"
+    }
 
    includedirs
    {
       "src",
       "include/Core",
-      "external/vulkan/Include"
+      "external/vulkan/Include",
+      "vendor/glm/glm"
    }
 
    libdirs

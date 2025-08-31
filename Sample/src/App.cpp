@@ -1,6 +1,6 @@
-#include "Core/Core.h"
+#include "Core/EntryPoint.h"
 
 int main()
 {
-	Core::PrintHelloWorld();
+	return Core::EntryPoint();
 }

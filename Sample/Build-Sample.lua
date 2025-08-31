@@ -5,7 +5,11 @@ project "Sample"
    targetdir "bin/%{cfg.buildcfg}"
    staticruntime "off"
 
-   files { "include/**.h", "src/**.cpp" }
+   files 
+   { 
+      "include/**.h", 
+      "src/**.cpp" 
+    }
 
    includedirs
    {
@@ -13,12 +17,22 @@ project "Sample"
       "include",
 
 	  -- Include Core
-	  "../Core/include"
+	  "../Core/include",
+
+      "../Core/external/vulkan/Include"
    }
+
+    libdirs 
+    {
+        "../Core/external/vulkan/Lib"
+    }
 
    links
    {
-      "Core"
+      "Core",
+      "SDL2",
+      "SDL2main",
+      "vulkan-1"
    }
 
    targetdir ("../bin/" .. OutputDir .. "/%{prj.name}")
