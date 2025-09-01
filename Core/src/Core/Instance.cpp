@@ -1,7 +1,13 @@
 #include "Instance.h"
 
-Instance::Instance(SDL_Window* window, bool enableValidation)
+// SDL
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_vulkan.h>
+
+Instance::Instance(Window* window, bool enableValidation)
 {
+	SDL_Window* sdlWindow = window->GetSDLWindow();
+
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = "Particle Mesh App";
@@ -10,14 +16,13 @@ Instance::Instance(SDL_Window* window, bool enableValidation)
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_2;
 
-    // --- Extensions (from SDL) ---
     unsigned int sdlExtensionCount = 0;
-    if (!SDL_Vulkan_GetInstanceExtensions(window, &sdlExtensionCount, nullptr)) {
+    if (!SDL_Vulkan_GetInstanceExtensions(sdlWindow, &sdlExtensionCount, nullptr)) {
         throw std::runtime_error("Failed to get SDL Vulkan extensions count");
     }
 
     std::vector<const char*> extensions(sdlExtensionCount);
-    if (!SDL_Vulkan_GetInstanceExtensions(window, &sdlExtensionCount, extensions.data())) {
+    if (!SDL_Vulkan_GetInstanceExtensions(sdlWindow, &sdlExtensionCount, extensions.data())) {
         throw std::runtime_error("Failed to get SDL Vulkan extensions names");
     }
 
@@ -25,13 +30,11 @@ Instance::Instance(SDL_Window* window, bool enableValidation)
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 
-    // --- Validation Layers ---
     std::vector<const char*> layers;
     if (enableValidation) {
         layers.push_back("VK_LAYER_KHRONOS_validation");
     }
 
-    // --- Instance Create Info ---
     VkInstanceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &appInfo;
@@ -44,7 +47,6 @@ Instance::Instance(SDL_Window* window, bool enableValidation)
         throw std::runtime_error("Failed to create Vulkan instance!");
     }
 
-    // --- Debug Messenger ---
     if (enableValidation) {
         SetupDebugMessenger();
     }
@@ -62,10 +64,10 @@ Instance::~Instance()
     vkDestroyInstance(m_Instance, nullptr);
 }
 
-VkSurfaceKHR Instance::CreateVulkanSurface(SDL_Window* window) const
+VkSurfaceKHR Instance::CreateVulkanSurface(Window* window) const
 {
     VkSurfaceKHR surface;
-    if (!SDL_Vulkan_CreateSurface(window, m_Instance, &surface))
+    if (!SDL_Vulkan_CreateSurface(window->GetSDLWindow(), m_Instance, &surface))
     {
 		throw std::runtime_error("Failed to create Vulkan surface with SDL");
     }

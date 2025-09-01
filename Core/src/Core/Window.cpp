@@ -7,6 +7,7 @@
 #include <SDL2/SDL_vulkan.h>
 
 Window::Window(const std::string& title, int width, int height)
+	: m_Wdith(width), m_Height(height)
 {
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) 
 	{

@@ -2,6 +2,11 @@
 .vs/
 bin/
 Core/external/
+Sample/objects/
+Sample/shaders/*.spv
+Sample/shaders/*.comp.spv
+Sample/shaders/*.vert.spv
+Sample/shaders/*.frag.spv
 
 # Files
 *.vcxproj
