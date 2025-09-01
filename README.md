@@ -12,7 +12,7 @@ All dependencies are included in the repo EXCEPT for the necessary Vulkan SDK he
 ----- Include
 ------ * (Include folder contents from vulkan sdk)
 ----- Libs
------ * (Libs folder contents from vulkan sdk)
+------ * (Libs folder contents from vulkan sdk)
 ----- License.txt
 --- ...
 -- ...
