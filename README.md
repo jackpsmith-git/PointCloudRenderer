@@ -26,7 +26,7 @@ You will also need to acquire the sample model. I used the monkey from the Blend
 Point-Cloud Renderer uses premake as its build system. To generate VS2022 project files, run Scripts/Setup-Windows.bat.
 
 ### Shader Compilation
-SPIR-V shaders are not pre-compiled in this repo. You must first generate compiled .spv files from each of the shaders in Sample/Shaders/. It is recommended that you use glslangValidator (included with Vulkan SDK) to do so. Open git bash in the root directory, and enter the following commands:
+SPIR-V shaders are not pre-compiled in this repo. You must first generate compiled .spv files from each of the shaders in Sample/Shaders/. It is recommended that you use glslangValidator (included with Vulkan SDK) to do so. Open git bash in the shaders directory, and enter the following commands:
 
 ```
 glslangValidator -V pointcloud.comp -o pointcloud.comp.spv
