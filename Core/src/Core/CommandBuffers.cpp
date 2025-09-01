@@ -17,40 +17,4 @@ CommandBuffers::CommandBuffers(VkDevice device, VkCommandPool commandPool, VkRen
     if (vkAllocateCommandBuffers(m_Device, &allocInfo, m_CommandBuffers.data()) != VK_SUCCESS) {
         throw std::runtime_error("Failed to allocate command buffers!");
     }
-
-    RecordCommandBuffers(renderPass);
-}
-
-void CommandBuffers::RecordCommandBuffers(VkRenderPass renderPass)
-{
-    for (size_t i = 0; i < m_CommandBuffers.size(); ++i) {
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = 0;
-
-        if (vkBeginCommandBuffer(m_CommandBuffers[i], &beginInfo) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to begin recording command buffer!");
-        }
-
-        VkRenderPassBeginInfo renderPassInfo{};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = renderPass;
-        renderPassInfo.framebuffer = m_Framebuffers[i];
-        renderPassInfo.renderArea.offset = { 0, 0 };
-        renderPassInfo.renderArea.extent = m_Extent;
-
-        VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
-        renderPassInfo.clearValueCount = 1;
-        renderPassInfo.pClearValues = &clearColor;
-
-        vkCmdBeginRenderPass(m_CommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-        // TODO: Add actual drawing commands here (particles, meshes, etc.)
-
-        vkCmdEndRenderPass(m_CommandBuffers[i]);
-
-        if (vkEndCommandBuffer(m_CommandBuffers[i]) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to record command buffer!");
-        }
-    }
 }

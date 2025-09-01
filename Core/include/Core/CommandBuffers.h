@@ -19,6 +19,4 @@ private:
 	std::vector<VkCommandBuffer> m_CommandBuffers;
 	const std::vector<VkFramebuffer>& m_Framebuffers;
 	VkExtent2D m_Extent;
-
-	void RecordCommandBuffers(VkRenderPass renderPass);
 };

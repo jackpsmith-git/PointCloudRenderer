@@ -1,0 +1,59 @@
+#pragma once
+
+#include "Buffer.h"
+#include "ComputePipeline.h"
+#include "GraphicsPipeline.h"
+#include "DescriptorPool.h"
+#include "Device.h"
+#include "Instance.h"
+#include "Mesh.h"
+#include "RenderPass.h"
+#include "Swapchain.h"
+#include "Window.h"
+
+class Renderer
+{
+public:
+	Renderer();
+	~Renderer();
+
+    void Init();
+	void Run();
+    void Shutdown();
+
+	bool IsRunning() const { return m_running; }
+
+private:
+    std::shared_ptr<Window> m_window;
+    std::shared_ptr<Instance> m_instance;
+    VkSurfaceKHR m_surface = VK_NULL_HANDLE;
+    std::shared_ptr<Device> m_device;
+    std::shared_ptr<Swapchain> m_swapChain;
+    std::shared_ptr<RenderPass> m_renderPass;
+	std::shared_ptr<CommandBuffers> m_commandBuffers;
+
+	std::shared_ptr<DescriptorPool> m_descriptorPool;
+	std::shared_ptr<ComputePipeline> m_computePipeline;
+	std::shared_ptr<GraphicsPipeline> m_graphicsPipeline;
+
+    std::shared_ptr<Buffer> m_triangleBuffer = nullptr;
+    std::shared_ptr<Buffer> m_pointBuffer = nullptr;
+
+    uint32_t m_imageCount;
+    std::vector<VkSemaphore> m_imageAvailable;
+	std::vector<VkSemaphore> m_renderFinished;
+	std::vector<VkFence> m_inFlightFences;
+	std::vector<VkFence> m_imagesInFlight;
+
+    bool m_running = true;
+	uint32_t m_currentFrame = 0;
+
+    Mesh m_mesh;
+	std::vector<Triangle> m_triangles;
+
+    const uint32_t WORK_GROUP_SIZE = 256;
+    const uint32_t NUM_GROUPS = (POINT_COUNT + WORK_GROUP_SIZE - 1) / WORK_GROUP_SIZE;
+
+    const uint32_t POINT_COUNT = 10000;
+
+};

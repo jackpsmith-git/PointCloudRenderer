@@ -7,6 +7,5 @@ layout(push_constant) uniform PC {
 
 void main() {
     gl_Position = pc.mvp * inPos;
-    // simple size; you can make it vary by depth in C++
-    gl_PointSize = 4.0;
+    gl_PointSize = 1.0;
 }

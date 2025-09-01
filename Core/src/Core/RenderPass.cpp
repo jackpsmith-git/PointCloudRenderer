@@ -3,8 +3,11 @@
 // STD
 #include <stdexcept>
 
+// VULKAN
+#include <vulkan/vulkan.h>
+
 RenderPass::RenderPass(Device* device, Swapchain* swapchain)
-	: m_Device(device->GetDevice()), m_Extent(swapchain->GetExtent())
+	: m_Device(device->GetDevice()), m_Extent(swapchain->GetExtent()), m_swapchain(swapchain)
 {
 	CreateRenderPass(swapchain->GetFormat());
 	CreateFramebuffers(swapchain->GetImageViews());
@@ -17,10 +20,25 @@ RenderPass::~RenderPass()
         vkDestroyFramebuffer(m_Device, fb, nullptr);
     }
 
-    if (m_RenderPass != VK_NULL_HANDLE) 
+    if (m_renderPass != VK_NULL_HANDLE) 
     {
-        vkDestroyRenderPass(m_Device, m_RenderPass, nullptr);
+        vkDestroyRenderPass(m_Device, m_renderPass, nullptr);
     }
+}
+
+void RenderPass::Begin(VkCommandBuffer cmd, uint32_t imageIndex)
+{
+    VkRenderPassBeginInfo renderInfo{};
+    renderInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderInfo.renderPass = m_renderPass;
+	renderInfo.framebuffer = GetFramebuffers()[imageIndex];
+    renderInfo.renderArea.offset = { 0,0 };
+    renderInfo.renderArea.extent = m_swapchain->GetExtent();
+    VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
+    renderInfo.clearValueCount = 1;
+    renderInfo.pClearValues = &clearColor;
+
+    vkCmdBeginRenderPass(cmd, &renderInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 void RenderPass::CreateRenderPass(VkFormat swapchainFormat)
@@ -51,7 +69,7 @@ void RenderPass::CreateRenderPass(VkFormat swapchainFormat)
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
 
-    if (vkCreateRenderPass(m_Device, &renderPassInfo, nullptr, &m_RenderPass) != VK_SUCCESS) {
+    if (vkCreateRenderPass(m_Device, &renderPassInfo, nullptr, &m_renderPass) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create render pass!");
     }
 }
@@ -62,7 +80,7 @@ void RenderPass::CreateFramebuffers(const std::vector<VkImageView>& imageViews)
     for (size_t i = 0; i < imageViews.size(); ++i) {
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.renderPass = m_RenderPass;
+        framebufferInfo.renderPass = m_renderPass;
         framebufferInfo.attachmentCount = 1;
         framebufferInfo.pAttachments = &imageViews[i];
         framebufferInfo.width = m_Extent.width;
