@@ -13,6 +13,7 @@
 class Mesh
 {
 public:
+	Mesh() {};
 	Mesh(const char* filepath);
 	~Mesh();
 

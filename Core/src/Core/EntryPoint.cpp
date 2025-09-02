@@ -3,9 +3,9 @@
 // CORE
 #include "Renderer.h"
 
-int Core::EntryPoint()
+int PCR::EntryPoint(const char* modelPath, uint32_t particleCount, float rotateSpeed)
 {
-	Renderer renderer;
+	Renderer renderer(modelPath, particleCount, rotateSpeed);
 	renderer.Init();
 
 	while (renderer.IsRunning())
@@ -13,5 +13,5 @@ int Core::EntryPoint()
 
 	renderer.Shutdown();
 
-	return 0;
+	return renderer.IsRunning() ? 1 : 0;
 }

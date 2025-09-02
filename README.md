@@ -1,5 +1,5 @@
 # Point-Cloud Renderer
-3D, cross-platform, point-cloud, Vulkan renderer.
+3D, point-cloud, Vulkan renderer for Windows.
 
 ## Dependencies
 All dependencies are included in the repo EXCEPT for the necessary Vulkan SDK headers and libs. Download v1.4.321.1 from https://www.lunarg.com/vulkan-sdk/. Place the necessary dependencies in the source code with the following structure:

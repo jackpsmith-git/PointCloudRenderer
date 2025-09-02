@@ -26,8 +26,8 @@
 // TINYOBJ
 #include "tinyobjloader/tiny_obj_loader.h"
 
-Renderer::Renderer()
-	: m_mesh("objects/Suzanne.obj"), m_triangles(m_mesh.GetTriangles())
+Renderer::Renderer(const char* modelPath, uint32_t particleCount, float rotationSpeed)
+	: m_mesh(modelPath), m_triangles(m_mesh.GetTriangles()), m_particleCount(particleCount), m_rotationSpeed(glm::radians(rotationSpeed))
 {
     m_window = std::make_shared<Window>("Point-Cloud Renderer", 1280, 720);
     m_instance = std::make_shared<Instance>(m_window.get());
@@ -61,15 +61,15 @@ void Renderer::Init()
     );
     m_triangleBuffer->CopyData(m_triangles.data(), sizeof(Triangle) * m_triangles.size());
 
-    m_pointBuffer = std::make_unique<Buffer>(
+    m_particleBuffer = std::make_unique<Buffer>(
         deviceHandle,
         physical,
-        sizeof(glm::vec4) * POINT_COUNT,
+        sizeof(glm::vec4) * m_particleCount,
         VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
     );
 
-    m_descriptorPool = std::make_shared<DescriptorPool>(m_device, m_renderPass, m_swapChain, m_triangleBuffer, m_pointBuffer);
+    m_descriptorPool = std::make_shared<DescriptorPool>(m_device, m_renderPass, m_swapChain, m_triangleBuffer, m_particleBuffer);
     m_commandBuffers = m_descriptorPool->GetCommandBuffers();
 	m_computePipeline = std::make_shared<ComputePipeline>(m_descriptorPool, m_device);
 	m_graphicsPipeline = std::make_shared<GraphicsPipeline>(m_renderPass, m_swapChain, m_device);
@@ -143,7 +143,7 @@ void Renderer::Run()
     compPC.numTriangles = static_cast<uint32_t>(m_triangles.size());
     vkCmdPushConstants(cmd, m_computePipeline->GetLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(ComputePushConstants), &compPC);
 
-    vkCmdDispatch(cmd, (POINT_COUNT + WORK_GROUP_SIZE - 1) / WORK_GROUP_SIZE, 1, 1);
+    vkCmdDispatch(cmd, (m_particleCount + WORK_GROUP_SIZE - 1) / WORK_GROUP_SIZE, 1, 1);
 
     // memory barrier: make compute writes visible to vertex input (graphics)
     VkMemoryBarrier memBarrier{};
@@ -165,7 +165,7 @@ void Renderer::Run()
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline->GetPipeline());
 
     VkDeviceSize offsets[] = { 0 };
-    VkBuffer vb = m_pointBuffer->Get();
+    VkBuffer vb = m_particleBuffer->Get();
     vkCmdBindVertexBuffers(cmd, 0, 1, &vb, offsets);
 
     // Push MVP for graphics (compute a basic MVP here; in your real app you'd compute camera/projection)
@@ -174,8 +174,7 @@ void Renderer::Run()
         (float)m_swapChain->GetExtent().width / (float)m_swapChain->GetExtent().height,
         0.1f, 100.0f);
 
-    constexpr float rotationSpeed = glm::radians(10.0f); // 10 degrees per second
-    float angle = rotationSpeed * static_cast<float>(clock()) / CLOCKS_PER_SEC;
+    float angle = m_rotationSpeed * static_cast<float>(clock()) / CLOCKS_PER_SEC;
     glm::mat4 model = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
 
     // flip Y for vulkan NDC
@@ -185,7 +184,7 @@ void Renderer::Run()
     vkCmdPushConstants(cmd, m_graphicsPipeline->GetLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GraphicsPushConstants), &gfxPC);
 
     // draw
-    vkCmdDraw(cmd, POINT_COUNT, 1, 0, 0);
+    vkCmdDraw(cmd, m_particleCount, 1, 0, 0);
 
     vkCmdEndRenderPass(cmd);
 

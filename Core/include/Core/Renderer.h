@@ -14,7 +14,7 @@
 class Renderer
 {
 public:
-	Renderer();
+	Renderer(const char* modelPath, uint32_t particleCount, float rotationSpeed);
 	~Renderer();
 
     void Init();
@@ -37,7 +37,7 @@ private:
 	std::shared_ptr<GraphicsPipeline> m_graphicsPipeline;
 
     std::shared_ptr<Buffer> m_triangleBuffer = nullptr;
-    std::shared_ptr<Buffer> m_pointBuffer = nullptr;
+    std::shared_ptr<Buffer> m_particleBuffer = nullptr;
 
     uint32_t m_imageCount;
     std::vector<VkSemaphore> m_imageAvailable;
@@ -52,8 +52,8 @@ private:
 	std::vector<Triangle> m_triangles;
 
     const uint32_t WORK_GROUP_SIZE = 256;
-    const uint32_t NUM_GROUPS = (POINT_COUNT + WORK_GROUP_SIZE - 1) / WORK_GROUP_SIZE;
+    const uint32_t NUM_GROUPS = (m_particleCount + WORK_GROUP_SIZE - 1) / WORK_GROUP_SIZE;
 
-    const uint32_t POINT_COUNT = 10000;
-
+    uint32_t m_particleCount;
+    float m_rotationSpeed;
 };
