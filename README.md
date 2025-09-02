@@ -10,9 +10,9 @@ All dependencies are included in the repo EXCEPT for the necessary Vulkan SDK he
 --- external
 ---- vulkan
 ----- Include
------- * (Include folder contents from vulkan sdk)
+------ * (Include folder contents from Vulkan SDK)
 ----- Libs
------- * (Libs folder contents from vulkan sdk)
+------ * (Libs folder contents from Vulkan SDK)
 ----- License.txt
 --- ...
 -- ...

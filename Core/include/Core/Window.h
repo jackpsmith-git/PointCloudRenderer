@@ -6,6 +6,9 @@
 // SDL
 #include <SDL2/SDL.h>
 
+// WIN32
+#include <Windows.h>
+
 class Window
 {
 public:
@@ -18,6 +21,8 @@ public:
 
 	uint32_t GetWidth() const { return m_Wdith; }
 	uint32_t GetHeight() const { return m_Height; }
+public:
+	bool FramebufferResized = false;
 private:
 	uint32_t m_Wdith = 1208;
 	uint32_t m_Height = 720;

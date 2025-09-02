@@ -14,17 +14,22 @@
 class Renderer
 {
 public:
-	Renderer(const char* modelPath, uint32_t particleCount, float rotationSpeed);
+    Renderer();
 	~Renderer();
 
-    void Init();
+	void LoadMesh(const char* modelPath);
+
+    void Init(std::shared_ptr<Window> window);
 	void Run();
     void Shutdown();
 
-	bool IsRunning() const { return m_running; }
+	void SetParticleCount(uint32_t count) { m_particleCount = count; }
+	void SetRotationSpeed(float speed) { m_rotationSpeed = glm::radians(speed); }
+private:
+    void RecreateSwapchain();
 
 private:
-    std::shared_ptr<Window> m_window;
+	std::shared_ptr<Window> m_window;
     std::shared_ptr<Instance> m_instance;
     VkSurfaceKHR m_surface = VK_NULL_HANDLE;
     std::shared_ptr<Device> m_device;
@@ -39,21 +44,21 @@ private:
     std::shared_ptr<Buffer> m_triangleBuffer = nullptr;
     std::shared_ptr<Buffer> m_particleBuffer = nullptr;
 
-    uint32_t m_imageCount;
+    uint32_t m_imageCount = 0;
     std::vector<VkSemaphore> m_imageAvailable;
 	std::vector<VkSemaphore> m_renderFinished;
 	std::vector<VkFence> m_inFlightFences;
 	std::vector<VkFence> m_imagesInFlight;
 
-    bool m_running = true;
 	uint32_t m_currentFrame = 0;
 
+    bool m_meshLoaded = false;
     Mesh m_mesh;
 	std::vector<Triangle> m_triangles;
 
     const uint32_t WORK_GROUP_SIZE = 256;
     const uint32_t NUM_GROUPS = (m_particleCount + WORK_GROUP_SIZE - 1) / WORK_GROUP_SIZE;
 
-    uint32_t m_particleCount;
-    float m_rotationSpeed;
+    uint32_t m_particleCount = 10000;
+    float m_rotationSpeed = glm::radians(10.0f);
 };

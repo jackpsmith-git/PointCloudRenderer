@@ -1,11 +1,34 @@
-#include "Core/EntryPoint.h"
 
-int WinMain()
+// ---------------------------------------------------------------------------
+// ------ Point-Cloud Renderer Sample Application ----------------------------
+// ---------------------------------------------------------------------------
+
+
+// CORE
+#include "Core/App.h"
+#include "Core/Renderer.h"
+
+int main(int argc, char* argv[])
 {
-	const char* modelPath = "objects/Suzanne.obj";
-	uint32_t particleCount = 100000;
-	float rotateSpeed = 10.0f;
+	App* app = new App();
+	auto window = app->GetWindow();
 
-	bool result = PCR::EntryPoint(modelPath, particleCount, rotateSpeed);
-	return result;
+	Renderer renderer;
+	renderer.LoadMesh("objects/Suzanne.obj");
+	renderer.SetParticleCount(10000);		// Optional - Defaults to 10,000
+	renderer.SetRotationSpeed(10.0f);	// Optional - Defaults to 10 degrees per second
+	
+	renderer.Init(window);
+
+	bool running = true;
+	while (running)
+	{
+		running = window->PollEvents();
+		renderer.Run();
+	}
+
+	renderer.Shutdown();
+
+	delete app;
+	return 0;
 }

@@ -3,6 +3,9 @@
 // STD
 #include <vector>
 #include <fstream>
+#include <string>
+#include <locale>
+#include <codecvt>
 
 // VULKAN
 #include <vulkan/vulkan.h>
@@ -37,5 +40,22 @@ namespace Utils
             throw std::runtime_error("Failed to create shader module!");
 
         return shaderModule;
+    }
+
+    static void ThrowFatalError(const char* message)
+    {
+        std::wstring wmsg = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>>().from_bytes(message);
+
+        int result = -1;
+        while (result != IDOK && result != IDCANCEL)
+        {
+            result = MessageBox(
+                nullptr,
+                wmsg.c_str(),
+                L"Fatal Error!",
+                MB_OK | MB_ICONERROR);
+        }
+
+        exit(EXIT_FAILURE);
     }
 }
