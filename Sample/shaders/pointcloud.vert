@@ -7,5 +7,5 @@ layout(push_constant) uniform PC {
 
 void main() {
     gl_Position = pc.mvp * inPos;
-    gl_PointSize = 1.0;
+    gl_PointSize = 2.0;
 }

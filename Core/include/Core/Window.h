@@ -23,6 +23,9 @@ public:
 	uint32_t GetHeight() const { return m_Height; }
 public:
 	bool FramebufferResized = false;
+
+	float CameraDistance = 3.0f;
+	float ZoomSpeed = 0.1f;
 private:
 	uint32_t m_Wdith = 1208;
 	uint32_t m_Height = 720;

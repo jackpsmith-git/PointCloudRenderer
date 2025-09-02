@@ -197,7 +197,8 @@ void Renderer::Run()
 
     // flip Y for vulkan NDC
     proj[1][1] *= -1.0f;
-    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, m_window->CameraDistance), glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     gfxPC.mvp = proj * view * model;
     vkCmdPushConstants(cmd, m_graphicsPipeline->GetLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GraphicsPushConstants), &gfxPC);
 

@@ -53,6 +53,13 @@ bool Window::PollEvents()
 		{
 			FramebufferResized = true;
 		}
+
+		if (event.type == SDL_MOUSEWHEEL)
+		{
+			CameraDistance -= event.wheel.y * ZoomSpeed;
+			if (CameraDistance < 0.1f) CameraDistance = 0.1f;
+			if (CameraDistance > 20.0f) CameraDistance = 20.0f;
+		}
 	}
 	return true;
 }
