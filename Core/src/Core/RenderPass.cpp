@@ -1,13 +1,13 @@
 #include "RenderPass.h"
 
-// STD
-#include <stdexcept>
+// PCR
+#include "Utils.h"
 
 // VULKAN
 #include <vulkan/vulkan.h>
 
 RenderPass::RenderPass(Device* device, Swapchain* swapchain)
-	: m_Device(device->GetDevice()), m_Extent(swapchain->GetExtent()), m_swapchain(swapchain)
+	: m_device(device->Get()), m_extent(swapchain->GetExtent()), m_swapchain(swapchain)
 {
 	CreateRenderPass(swapchain->GetFormat());
 	CreateFramebuffers(swapchain->GetImageViews());
@@ -15,14 +15,14 @@ RenderPass::RenderPass(Device* device, Swapchain* swapchain)
 
 RenderPass::~RenderPass()
 {
-    for (auto fb : m_Framebuffers) 
+    for (auto fb : m_framebuffers) 
     {
-        vkDestroyFramebuffer(m_Device, fb, nullptr);
+        vkDestroyFramebuffer(m_device, fb, nullptr);
     }
 
     if (m_renderPass != VK_NULL_HANDLE) 
     {
-        vkDestroyRenderPass(m_Device, m_renderPass, nullptr);
+        vkDestroyRenderPass(m_device, m_renderPass, nullptr);
     }
 }
 
@@ -69,26 +69,29 @@ void RenderPass::CreateRenderPass(VkFormat swapchainFormat)
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
 
-    if (vkCreateRenderPass(m_Device, &renderPassInfo, nullptr, &m_renderPass) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create render pass!");
+    if (vkCreateRenderPass(m_device, &renderPassInfo, nullptr, &m_renderPass) != VK_SUCCESS) 
+    {
+        Utils::ThrowFatalError("Failed to create render pass!");
     }
 }
 
 void RenderPass::CreateFramebuffers(const std::vector<VkImageView>& imageViews)
 {
-    m_Framebuffers.resize(imageViews.size());
-    for (size_t i = 0; i < imageViews.size(); ++i) {
+    m_framebuffers.resize(imageViews.size());
+    for (size_t i = 0; i < imageViews.size(); ++i) 
+    {
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass = m_renderPass;
         framebufferInfo.attachmentCount = 1;
         framebufferInfo.pAttachments = &imageViews[i];
-        framebufferInfo.width = m_Extent.width;
-        framebufferInfo.height = m_Extent.height;
+        framebufferInfo.width = m_extent.width;
+        framebufferInfo.height = m_extent.height;
         framebufferInfo.layers = 1;
 
-        if (vkCreateFramebuffer(m_Device, &framebufferInfo, nullptr, &m_Framebuffers[i]) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create framebuffer!");
+        if (vkCreateFramebuffer(m_device, &framebufferInfo, nullptr, &m_framebuffers[i]) != VK_SUCCESS) 
+        {
+            Utils::ThrowFatalError("Failed to create framebuffer!");
         }
     }
 }

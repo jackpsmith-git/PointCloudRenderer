@@ -1,6 +1,6 @@
 #include "DescriptorPool.h"
 
-// CORE
+// PCR
 #include "CommandBuffers.h"
 
 // STD
@@ -14,11 +14,11 @@ DescriptorPool::DescriptorPool(std::shared_ptr<Device> device, std::shared_ptr<R
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     poolInfo.queueFamilyIndex = m_device->GetGraphicsFamilyIndex();
     VkCommandPool commandPool = VK_NULL_HANDLE;
-    if (vkCreateCommandPool(m_device->GetDevice(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
+    if (vkCreateCommandPool(m_device->Get(), &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
         throw std::runtime_error("Failed to create command pool!");
 
-    m_commandBuffers = std::make_shared<CommandBuffers>(m_device->GetDevice(), commandPool,
-        m_renderPass->GetRenderPass(),
+    m_commandBuffers = std::make_shared<CommandBuffers>(m_device->Get(), commandPool,
+        m_renderPass->Get(),
         m_renderPass->GetFramebuffers(),
         m_swapchain->GetExtent());
 
@@ -41,10 +41,9 @@ DescriptorPool::DescriptorPool(std::shared_ptr<Device> device, std::shared_ptr<R
     descLayoutInfo.bindingCount = static_cast<uint32_t>(descBindings.size());
     descLayoutInfo.pBindings = descBindings.data();
 
-    if (vkCreateDescriptorSetLayout(m_device->GetDevice(), &descLayoutInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS)
+    if (vkCreateDescriptorSetLayout(m_device->Get(), &descLayoutInfo, nullptr, &m_descriptorSetLayout) != VK_SUCCESS)
         throw std::runtime_error("Failed to create descriptor set layout!");
 
-    // --- Descriptor pool + allocate descriptor set ---
     VkDescriptorPoolSize poolSizes[1];
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     poolSizes[0].descriptorCount = 2;
@@ -56,7 +55,7 @@ DescriptorPool::DescriptorPool(std::shared_ptr<Device> device, std::shared_ptr<R
     poolCreate.maxSets = 1;
 
     VkDescriptorPool descPool;
-    if (vkCreateDescriptorPool(m_device->GetDevice(), &poolCreate, nullptr, &descPool) != VK_SUCCESS)
+    if (vkCreateDescriptorPool(m_device->Get(), &poolCreate, nullptr, &descPool) != VK_SUCCESS)
         throw std::runtime_error("Failed to create descriptor pool!");
 
     VkDescriptorSetAllocateInfo allocInfo{};
@@ -65,7 +64,7 @@ DescriptorPool::DescriptorPool(std::shared_ptr<Device> device, std::shared_ptr<R
     allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = GetDescriptorSetLayout();
 
-    if (vkAllocateDescriptorSets(m_device->GetDevice(), &allocInfo, &m_computeDescriptorSet) != VK_SUCCESS)
+    if (vkAllocateDescriptorSets(m_device->Get(), &allocInfo, &m_computeDescriptorSet) != VK_SUCCESS)
         throw std::runtime_error("Failed to allocate descriptor set!");
 
     VkDescriptorBufferInfo triBufInfo{};
@@ -97,12 +96,10 @@ DescriptorPool::DescriptorPool(std::shared_ptr<Device> device, std::shared_ptr<R
     writePoint.pBufferInfo = &pointBufInfo;
 
     std::array<VkWriteDescriptorSet, 2> writeSets = { writeTri, writePoint };
-    vkUpdateDescriptorSets(m_device->GetDevice(), static_cast<uint32_t>(writeSets.size()), writeSets.data(), 0, nullptr);
+    vkUpdateDescriptorSets(m_device->Get(), static_cast<uint32_t>(writeSets.size()), writeSets.data(), 0, nullptr);
 }
 
 DescriptorPool::~DescriptorPool()
 {
-	//vkDestroyDescriptorPool(m_device->GetDevice(), *m_descriptorPool, nullptr);
-	vkDestroyDescriptorSetLayout(m_device->GetDevice(), m_descriptorSetLayout, nullptr);
-	//vkDestroyCommandPool(m_device->GetDevice(), *m_commandPool, nullptr);
+	vkDestroyDescriptorSetLayout(m_device->Get(), m_descriptorSetLayout, nullptr);
 }

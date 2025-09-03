@@ -3,7 +3,7 @@
 // STD
 #include <vector>
 
-// Vulkan
+// VULKAN
 #include <vulkan/vulkan.h>
 
 class CommandBuffers
@@ -12,11 +12,11 @@ public:
 	CommandBuffers(VkDevice device, VkCommandPool commandPool, VkRenderPass renderPass, const std::vector<VkFramebuffer>& framebuffers, VkExtent2D extent);
 	~CommandBuffers() {};
 
-	const std::vector<VkCommandBuffer>& GetCommandBuffers() const { return m_CommandBuffers; }
+	const std::vector<VkCommandBuffer>& Get() const { return m_commandBuffers; }
 
 private:
-	VkDevice m_Device;
-	std::vector<VkCommandBuffer> m_CommandBuffers;
-	const std::vector<VkFramebuffer>& m_Framebuffers;
-	VkExtent2D m_Extent;
+	VkDevice m_device;
+	std::vector<VkCommandBuffer> m_commandBuffers;
+	const std::vector<VkFramebuffer>& m_framebuffers;
+	VkExtent2D m_extent;
 };

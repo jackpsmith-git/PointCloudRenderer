@@ -1,14 +1,17 @@
 #pragma once
 
 // STD
-#include <vector>
-#include <fstream>
-#include <string>
-#include <locale>
 #include <codecvt>
+#include <fstream>
+#include <locale>
+#include <string>
+#include <vector>
 
 // VULKAN
 #include <vulkan/vulkan.h>
+
+// WIN32
+#include <windows.h>
 
 namespace Utils
 {

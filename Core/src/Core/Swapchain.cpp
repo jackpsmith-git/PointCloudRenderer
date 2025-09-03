@@ -1,11 +1,13 @@
 #include "Swapchain.h"
 
+// PCR
+#include "Utils.h"
+
 // STD
-#include <stdexcept>
 #include <algorithm>
 
 Swapchain::Swapchain(Device* device, Window* window)
-	: m_PhysicalDevice(device->GetPhysicalDevice()), m_Device(device->GetDevice()), m_Surface(device->GetSurface())
+	: m_physicalDevice(device->GetPhysicalDevice()), m_device(device->Get()), m_surface(device->GetSurface())
 {
 	uint32_t width = window->GetWidth();
 	uint32_t height = window->GetHeight();
@@ -18,14 +20,14 @@ Swapchain::Swapchain(Device* device, Window* window)
 
 Swapchain::~Swapchain()
 {
-	for (auto view : m_ImageViews) 
+	for (auto view : m_imageViews) 
     {
-		vkDestroyImageView(m_Device, view, nullptr);
+		vkDestroyImageView(m_device, view, nullptr);
 	}
 
-	if (m_Swapchain != VK_NULL_HANDLE) 
+	if (m_swapchain != VK_NULL_HANDLE) 
     {
-		vkDestroySwapchainKHR(m_Device, m_Swapchain, nullptr);
+		vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
 	}
 }
 
@@ -33,23 +35,23 @@ Swapchain::SwapchainSupportDetails Swapchain::QuerySwapchainSupport(VkPhysicalDe
 {
     SwapchainSupportDetails details;
 
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface, &details.capabilities);
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_surface, &details.capabilities);
 
     uint32_t formatCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, nullptr);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_surface, &formatCount, nullptr);
 
     if (formatCount != 0) 
     {
         details.formats.resize(formatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, details.formats.data());
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_surface, &formatCount, details.formats.data());
     }
 
     uint32_t presentModeCount;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, nullptr);
+    vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_surface, &presentModeCount, nullptr);
 
     if (presentModeCount != 0) {
         details.presentModes.resize(presentModeCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, details.presentModes.data());
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_surface, &presentModeCount, details.presentModes.data());
     }
 
     return details;
@@ -97,7 +99,7 @@ VkExtent2D Swapchain::ChooseExtent(const VkSurfaceCapabilitiesKHR& capabilities,
 
 void Swapchain::CreateSwapchain(uint32_t width, uint32_t height, uint32_t graphicsFamily, uint32_t presentFamily)
 {
-    SwapchainSupportDetails support = QuerySwapchainSupport(m_PhysicalDevice);
+    SwapchainSupportDetails support = QuerySwapchainSupport(m_physicalDevice);
 
     VkSurfaceFormatKHR surfaceFormat = ChooseSurfaceFormat(support.formats);
     VkPresentModeKHR presentMode = ChoosePresentMode(support.presentModes);
@@ -110,7 +112,7 @@ void Swapchain::CreateSwapchain(uint32_t width, uint32_t height, uint32_t graphi
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.surface = m_Surface;
+    createInfo.surface = m_surface;
     createInfo.minImageCount = imageCount;
     createInfo.imageFormat = surfaceFormat.format;
     createInfo.imageColorSpace = surfaceFormat.colorSpace;
@@ -134,28 +136,29 @@ void Swapchain::CreateSwapchain(uint32_t width, uint32_t height, uint32_t graphi
     createInfo.clipped = VK_TRUE;
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    if (vkCreateSwapchainKHR(m_Device, &createInfo, nullptr, &m_Swapchain) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create swapchain!");
+    if (vkCreateSwapchainKHR(m_device, &createInfo, nullptr, &m_swapchain) != VK_SUCCESS) 
+    {
+        Utils::ThrowFatalError("Failed to create swapchain!");
     }
 
-    vkGetSwapchainImagesKHR(m_Device, m_Swapchain, &imageCount, nullptr);
-    m_Images.resize(imageCount);
-    vkGetSwapchainImagesKHR(m_Device, m_Swapchain, &imageCount, m_Images.data());
+    vkGetSwapchainImagesKHR(m_device, m_swapchain, &imageCount, nullptr);
+    m_images.resize(imageCount);
+    vkGetSwapchainImagesKHR(m_device, m_swapchain, &imageCount, m_images.data());
 
-    m_Format = surfaceFormat.format;
-    m_Extent = extent;
+    m_format = surfaceFormat.format;
+    m_extent = extent;
 }
 
 void Swapchain::CreateImageViews()
 {
-    m_ImageViews.resize(m_Images.size());
+    m_imageViews.resize(m_images.size());
 
-    for (size_t i = 0; i < m_Images.size(); ++i) {
+    for (size_t i = 0; i < m_images.size(); ++i) {
         VkImageViewCreateInfo viewInfo{};
         viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        viewInfo.image = m_Images[i];
+        viewInfo.image = m_images[i];
         viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        viewInfo.format = m_Format;
+        viewInfo.format = m_format;
         viewInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
         viewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
         viewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -166,8 +169,9 @@ void Swapchain::CreateImageViews()
         viewInfo.subresourceRange.baseArrayLayer = 0;
         viewInfo.subresourceRange.layerCount = 1;
 
-        if (vkCreateImageView(m_Device, &viewInfo, nullptr, &m_ImageViews[i]) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create image views!");
+        if (vkCreateImageView(m_device, &viewInfo, nullptr, &m_imageViews[i]) != VK_SUCCESS) 
+        {
+            Utils::ThrowFatalError("Failed to create image views!");
         }
     }
 }

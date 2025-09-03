@@ -1,6 +1,6 @@
 #pragma once
 
-// CORE
+// PCR
 #include "Device.h"
 #include "Triangle.h"
 
@@ -17,7 +17,6 @@ public:
         VkMemoryPropertyFlags properties);
 
     Buffer() {};
-
     ~Buffer();
 
     VkBuffer Get() const { return m_buffer; }
@@ -29,10 +28,10 @@ public:
     void CopyData(const void* data, VkDeviceSize size);
 
 private:
-    VkDevice m_device;
-    VkPhysicalDevice m_physicalDevice;
-
     VkBuffer m_buffer = VK_NULL_HANDLE;
+
+    VkDevice m_device = VK_NULL_HANDLE;
+    VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
     VkDeviceMemory m_memory = VK_NULL_HANDLE;
     VkDeviceSize m_size = 0;
 

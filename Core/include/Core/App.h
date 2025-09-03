@@ -1,6 +1,6 @@
 #pragma once
 
-// CORE
+// PCR
 #include "Window.h"
 
 // STD

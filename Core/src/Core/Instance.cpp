@@ -1,12 +1,15 @@
 #include "Instance.h"
 
+// PCR
+#include "Utils.h"
+
 // SDL
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_vulkan.h>
 
 Instance::Instance(Window* window, bool enableValidation)
 {
-	SDL_Window* sdlWindow = window->GetSDLWindow();
+	SDL_Window* sdlWindow = window->Get();
 
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -18,12 +21,12 @@ Instance::Instance(Window* window, bool enableValidation)
 
     unsigned int sdlExtensionCount = 0;
     if (!SDL_Vulkan_GetInstanceExtensions(sdlWindow, &sdlExtensionCount, nullptr)) {
-        throw std::runtime_error("Failed to get SDL Vulkan extensions count");
+        Utils::ThrowFatalError("Failed to get SDL Vulkan extensions count");
     }
 
     std::vector<const char*> extensions(sdlExtensionCount);
     if (!SDL_Vulkan_GetInstanceExtensions(sdlWindow, &sdlExtensionCount, extensions.data())) {
-        throw std::runtime_error("Failed to get SDL Vulkan extensions names");
+        Utils::ThrowFatalError("Failed to get SDL Vulkan extensions names");
     }
 
     if (enableValidation) {
@@ -43,8 +46,8 @@ Instance::Instance(Window* window, bool enableValidation)
     createInfo.enabledLayerCount = static_cast<uint32_t>(layers.size());
     createInfo.ppEnabledLayerNames = layers.data();
 
-    if (vkCreateInstance(&createInfo, nullptr, &m_Instance) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create Vulkan instance!");
+    if (vkCreateInstance(&createInfo, nullptr, &m_instance) != VK_SUCCESS) {
+        Utils::ThrowFatalError("Failed to create Vulkan instance!");
     }
 
     if (enableValidation) {
@@ -54,22 +57,22 @@ Instance::Instance(Window* window, bool enableValidation)
 
 Instance::~Instance()
 {
-    if (m_DebugMessenger != VK_NULL_HANDLE) {
+    if (m_debugMessenger != VK_NULL_HANDLE) {
         auto destroyFn = (PFN_vkDestroyDebugUtilsMessengerEXT)
-            vkGetInstanceProcAddr(m_Instance, "vkDestroyDebugUtilsMessengerEXT");
+            vkGetInstanceProcAddr(m_instance, "vkDestroyDebugUtilsMessengerEXT");
         if (destroyFn) {
-            destroyFn(m_Instance, m_DebugMessenger, nullptr);
+            destroyFn(m_instance, m_debugMessenger, nullptr);
         }
     }
-    vkDestroyInstance(m_Instance, nullptr);
+    vkDestroyInstance(m_instance, nullptr);
 }
 
 VkSurfaceKHR Instance::CreateVulkanSurface(Window* window) const
 {
     VkSurfaceKHR surface;
-    if (!SDL_Vulkan_CreateSurface(window->GetSDLWindow(), m_Instance, &surface))
+    if (!SDL_Vulkan_CreateSurface(window->Get(), m_instance, &surface))
     {
-		throw std::runtime_error("Failed to create Vulkan surface with SDL");
+        Utils::ThrowFatalError("Failed to create Vulkan surface with SDL");
     }
 
     return surface;
@@ -89,9 +92,9 @@ void Instance::SetupDebugMessenger()
     info.pfnUserCallback = DebugCallback;
 
     auto createFn = (PFN_vkCreateDebugUtilsMessengerEXT)
-        vkGetInstanceProcAddr(m_Instance, "vkCreateDebugUtilsMessengerEXT");
-    if (createFn && createFn(m_Instance, &info, nullptr, &m_DebugMessenger) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to set up debug messenger!");
+        vkGetInstanceProcAddr(m_instance, "vkCreateDebugUtilsMessengerEXT");
+    if (createFn && createFn(m_instance, &info, nullptr, &m_debugMessenger) != VK_SUCCESS) {
+        Utils::ThrowFatalError("Failed to set up debug messenger!");
     }
 }
 

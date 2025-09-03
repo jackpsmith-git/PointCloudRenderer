@@ -1,13 +1,14 @@
 #include "Mesh.h"
 
-// STD
-#include <stdexcept>
+// PCR
+#include "Utils.h"
 
 Mesh::Mesh(const char* filepath)
 {
 	if (!tinyobj::LoadObj(&m_attributes, &m_shapes, &m_materials, &m_warning, &m_error, filepath)) 
 	{
-		throw std::runtime_error(m_warning+ m_error);
+        std::string message(m_warning + m_error);
+		Utils::ThrowFatalError(message.c_str());
 	}
 
     for (const auto& shape : m_shapes)
@@ -28,7 +29,7 @@ Mesh::Mesh(const char* filepath)
     }
 
     if (triangles.empty())
-        throw std::runtime_error("No triangles loaded from OBJ.");
+        Utils::ThrowFatalError("No triangles loaded from OBJ.");
 }
 
 Mesh::~Mesh(){}

@@ -1,19 +1,17 @@
 #include "GraphicsPipeline.h"
 
-// CORE
-#include "Utils.h"
+// PCR
 #include "PushConstants.h"
+#include "Utils.h"
 
 GraphicsPipeline::GraphicsPipeline(std::shared_ptr<RenderPass> renderPass, std::shared_ptr<Swapchain> swapchain, std::shared_ptr<Device> device)
 	: m_device(device)
 {
-    // read shader SPIR-V
     auto vertCode = Utils::ReadFile("shaders/pointcloud.vert.spv");
     auto fragCode = Utils::ReadFile("shaders/pointcloud.frag.spv");
-    VkShaderModule vertShader = Utils::CreateShaderModule(m_device->GetDevice(), vertCode);
-    VkShaderModule fragShader = Utils::CreateShaderModule(m_device->GetDevice(), fragCode);
+    VkShaderModule vertShader = Utils::CreateShaderModule(m_device->Get(), vertCode);
+    VkShaderModule fragShader = Utils::CreateShaderModule(m_device->Get(), fragCode);
 
-    // graphics pipeline layout: push constant for MVP
     VkPushConstantRange gfxPush{};
     gfxPush.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     gfxPush.offset = 0;
@@ -26,8 +24,8 @@ GraphicsPipeline::GraphicsPipeline(std::shared_ptr<RenderPass> renderPass, std::
     gfxPLInfo.pushConstantRangeCount = 1;
     gfxPLInfo.pPushConstantRanges = &gfxPush;
 
-    if (vkCreatePipelineLayout(m_device->GetDevice(), &gfxPLInfo, nullptr, &m_layout) != VK_SUCCESS)
-        throw std::runtime_error("Failed to create graphics pipeline layout!");
+    if (vkCreatePipelineLayout(m_device->Get(), &gfxPLInfo, nullptr, &m_layout) != VK_SUCCESS)
+        Utils::ThrowFatalError("Failed to create graphics pipeline layout!");
 
     VkPipelineShaderStageCreateInfo vertStage{};
     vertStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -45,7 +43,7 @@ GraphicsPipeline::GraphicsPipeline(std::shared_ptr<RenderPass> renderPass, std::
 
     VkVertexInputBindingDescription bindingDesc{};
     bindingDesc.binding = 0;
-    bindingDesc.stride = sizeof(glm::vec4); // we wrote vec4 into SSBO
+    bindingDesc.stride = sizeof(glm::vec4);
     bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
     VkVertexInputAttributeDescription attrDesc{};
@@ -123,18 +121,18 @@ GraphicsPipeline::GraphicsPipeline(std::shared_ptr<RenderPass> renderPass, std::
     pipelineInfo.pMultisampleState = &multisample;
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.layout = m_layout;
-    pipelineInfo.renderPass = renderPass->GetRenderPass();
+    pipelineInfo.renderPass = renderPass->Get();
     pipelineInfo.subpass = 0;
 
-    if (vkCreateGraphicsPipelines(m_device->GetDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS)
-        throw std::runtime_error("Failed to create graphics pipeline!");
+    if (vkCreateGraphicsPipelines(m_device->Get(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_pipeline) != VK_SUCCESS)
+        Utils::ThrowFatalError("Failed to create graphics pipeline!");
 
-    vkDestroyShaderModule(m_device->GetDevice(), vertShader, nullptr);
-    vkDestroyShaderModule(m_device->GetDevice(), fragShader, nullptr);
+    vkDestroyShaderModule(m_device->Get(), vertShader, nullptr);
+    vkDestroyShaderModule(m_device->Get(), fragShader, nullptr);
 }
 
 GraphicsPipeline::~GraphicsPipeline()
 {
-    vkDestroyPipeline(m_device->GetDevice(), m_pipeline, nullptr);
-    vkDestroyPipelineLayout(m_device->GetDevice(), m_layout, nullptr);
+    vkDestroyPipeline(m_device->Get(), m_pipeline, nullptr);
+    vkDestroyPipelineLayout(m_device->Get(), m_layout, nullptr);
 }

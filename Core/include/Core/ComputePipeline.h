@@ -1,6 +1,6 @@
 #pragma once
 
-// CORE
+// PCR
 #include "DescriptorPool.h"
 
 class ComputePipeline
@@ -9,8 +9,8 @@ public:
 	ComputePipeline(std::shared_ptr<DescriptorPool> descriptorPool, std::shared_ptr<Device> device);
 	~ComputePipeline();
 
+	VkPipeline Get() const { return m_pipeline; }
 	VkPipelineLayout GetLayout() const { return m_layout; }
-	VkPipeline GetPipeline() const { return m_pipeline; }
 
 private:
 	std::shared_ptr<Device> m_device;
