@@ -55,4 +55,4 @@ bin\windows-x86_64\Debug\
 
 To run the sample app, first copy the "objects" and "shaders" folders from the "Sample" subdirectory of the root directory, and paste them into the "Sample" subdirectory of the compiled binaries.
 
-Everything in the "Sample" bin directory must remain alongside the executable. Run "Sample.exe" to view the rendered sample model.
+Everything in the "Sample/" bin directory must remain alongside the executable. Run "Sample.exe" to view the rendered sample model.
